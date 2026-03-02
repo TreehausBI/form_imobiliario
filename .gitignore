@@ -27,6 +27,3 @@ __pycache__/
 
 # Pytest
 .pytest_cache/
-
-# Migrations (opcional - depende do seu fluxo)
-# migrations/versions/*.pyc
