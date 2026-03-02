@@ -1,0 +1,42 @@
+{% extends "main.html" %}
+{% block title %}Visualização dos Empreendimentos{% endblock %}
+
+{% block content %}
+<table class="w-full text-sm border border-gray-200">
+  <thead class="bg-gray-100">
+    <tr>
+      <th class="text-left px-2 py-1">Empreendimento</th>
+      <th class="text-left px-2 py-1">Construtora</th>
+      <th class="text-left px-2 py-1">Bairro</th>
+      <th class="text-center px-2 py-1">Imóveis</th>
+      <th class="text-left px-2 py-1">Último mês</th>
+      <th class="text-left px-2 py-1"></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for emp, qtd, ultimo in empreendimentos %}
+    <tr class="border-t border-gray-200">
+      <td class="px-2 py-1 text-left">{{ emp.nome_empreendimento }}</td>
+      <td class="px-2 py-1 text-left">{{ emp.construtora.nome_construtora }}</td>
+      <td class="px-2 py-1 text-left">{{ emp.bairro.nome_bairro }}</td>
+      <td class="px-2 py-1 text-center">{{ qtd }}</td>
+      <td class="px-2 py-1 text-left">{{ ultimo.strftime("%m/%Y") if ultimo else "-" }}</td>
+      <td class="px-2 py-1 text-left">
+        <a
+          href="{{ url_for('empreendimento.imoveis_por_empreendimento', id=emp.id_empreendimento) }}"
+          class="text-blue-600 hover:underline"
+        >
+          Ver imóveis
+        </a>
+          <a
+            href="{{ url_for('empreendimento.editar_empreendimento', id=emp.id_empreendimento) }}"
+            class="text-orange-600 hover:underline"
+          >
+            Editar
+          </a>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

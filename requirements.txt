@@ -1,0 +1,32 @@
+# Framework principal
+Flask==3.1.0
+
+# Suporte a formulários no Flask
+Flask-WTF==1.2.2
+
+# ORM para interação com o banco de dados
+SQLAlchemy==2.0.21
+Flask-SQLAlchemy==3.0.5
+
+# PostgreSQL como backend do banco de dados
+psycopg2-binary==2.9.7
+
+# Validações adicionais para formulários
+WTForms==3.0.1
+
+# Ferramentas úteis para segurança
+Flask-Bcrypt==1.0.1
+Flask-Cors==4.0.0
+
+# Para carregar configurações do .env
+python-dotenv==1.0.0
+
+# Controle de migrações no banco de dados
+Flask-Migrate==4.0.0
+
+# Outras dependências úteis
+requests==2.31.0
+Jinja2==3.1.2
+
+# Servidor WSGI
+gunicorn==21.2.0

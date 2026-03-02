@@ -1,0 +1,65 @@
+{% extends "main.html" %}
+{% block title %}Visualização dos Empreendimentos{% endblock %}
+
+{% block content %}
+<h2 class="text-xl font-bold mb-4">
+  {{ empreendimento.nome_empreendimento }}
+</h2>
+
+<table class="w-full text-sm border border-gray-200">
+  <thead class="bg-gray-100">
+    <tr>
+      <th class="text-left px-2 py-1">Apto</th>
+      <th class="text-left px-2 py-1">Pav</th>
+      <th class="text-right px-2 py-1">Área</th>
+      <th class="text-right px-2 py-1">Valor</th>
+      <th class="text-left px-2 py-1">Status</th>
+      <th class="text-left px-2 py-1">Mês</th>
+      <th class="text-left px-2 py-1">Ações</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for imovel, valor in dados %}
+    <tr class="border-t border-gray-200">
+      <td class="px-2 py-1 text-left">{{ imovel.apartamento }}</td>
+      <td class="px-2 py-1 text-left">{{ imovel.pavimento }}</td>
+      <td class="px-2 py-1 text-right">{{ imovel.area_interna }}</td>
+      <td class="px-2 py-1 text-right">
+        {% if valor %}
+          R$ {{ valor.valor_total }}
+        {% else %}
+          -
+        {% endif %}
+      </td>
+
+      <td class="px-2 py-1 text-left">
+        {% if valor %}
+          {{ valor.status }}
+        {% else %}
+          Sem valor
+        {% endif %}
+      </td>
+
+      <td class="px-2 py-1 text-left">
+        {% if valor %}
+          {{ valor.mes_referencia.strftime("%m/%Y") }}
+        {% else %}
+          -
+        {% endif %}
+      </td>
+      <td class="px-2 py-1 text-left">
+        <a href="{{ url_for('valores.atualizar_valor', id_imovel=imovel.id_imovel) }}"
+          class="text-blue-600 hover:underline mr-2">
+          Valores
+        </a>
+
+        <a href="{{ url_for('imovel.editar_imovel', id=imovel.id_imovel) }}"
+          class="text-orange-600 hover:underline">
+          Editar
+        </a>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

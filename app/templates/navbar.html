@@ -1,0 +1,27 @@
+<nav class="bg-white shadow mb-6">
+  <div class="max-w-7xl mx-auto px-4 flex space-x-6 h-14 items-center">
+
+    <a href="{{ url_for('main.index') }}" class="font-semibold">
+      Home
+    </a>
+
+    <!-- Cadastros -->
+    <a href="{{ url_for('empreendimento.cadastro_empreendimento') }}">
+      Cadastrar Empreendimento
+    </a>
+
+    <a href="{{ url_for('imovel.cadastro_imovel') }}">
+      Cadastrar Imóvel
+    </a>
+
+    <a href="{{ url_for('valores.pendencias_mes') }}">
+      Ver Empreendimentos sem Atualização
+    </a>
+
+    <!-- Visualizações -->
+    <a href="{{ url_for('empreendimento.lista_empreendimentos') }}">
+      Visualizar Empreendimentos
+    </a>
+    
+  </div>
+</nav>

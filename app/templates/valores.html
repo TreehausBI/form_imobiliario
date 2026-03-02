@@ -1,0 +1,83 @@
+{% extends "main.html" %}
+{% block title %}Valores do Imóvel{% endblock %}
+
+{% block content %}
+<div class="bg-white shadow rounded-lg p-6 max-w-4xl mx-auto">
+  <h2 class="text-xl font-bold mb-6">Cadastro de Valores</h2>
+
+  <form method="POST">
+    {{ form.hidden_tag() }}
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+      <h2 class="text-xl font-bold mb-2">
+        Atualizar Valor
+      </h2>
+
+      <p class="text-sm text-gray-600 mb-6">
+        {{ imovel.empreendimento.nome_empreendimento }} |
+        Apto {{ imovel.apartamento }} |
+        Pav {{ imovel.pavimento }}
+      </p>
+
+      <div>
+        {{ form.mes_referencia.label(class_="block text-sm font-medium") }}
+        {{ form.mes_referencia(class_="mt-1 w-full rounded border-gray-300", type="date") }}
+      </div>
+
+      <div>
+        {{ form.valor_total.label(class_="block text-sm font-medium") }}
+        {{ form.valor_total(class_="mt-1 w-full rounded border-gray-300") }}
+      </div>
+
+      <div>
+        {{ form.status.label(class_="block text-sm font-medium") }}
+        {{ form.status(class_="mt-1 w-full rounded border-gray-300") }}
+      </div>
+    </div>
+
+    <div class="mt-6 text-right">
+      <button type="submit"
+        class="px-6 py-3 rounded-md text-white bg-[#ff9a6d] hover:bg-[#ff6725] transition">
+        Salvar Valores
+      </button>
+    </div>
+  </form>
+
+<hr class="my-6">
+
+<h3 class="text-lg font-semibold mb-3">Histórico de Valores</h3>
+
+<table class="w-full text-sm border border-gray-200">
+  <thead class="bg-gray-100">
+    <tr>
+      <th class="px-2 py-1 text-left">Mês</th>
+      <th class="px-2 py-1 text-right">Valor</th>
+      <th class="px-2 py-1 text-left">Status</th>
+      <th class="px-2 py-1 text-left">Ações</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for v in historico %}
+    <tr class="border-t border-gray-200">
+      <td class="px-2 py-1">
+        {{ v.mes_referencia.strftime("%m/%Y") }}
+      </td>
+      <td class="px-2 py-1 text-right">
+        R$ {{ v.valor_total }}
+      </td>
+      <td class="px-2 py-1">
+        {{ v.status }}
+      </td>
+      <td class="px-2 py-1">
+        <a href="{{ url_for('valores.editar_valor', id=v.id_valor) }}"
+           class="text-orange-600 hover:underline">
+           Editar
+        </a>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
+

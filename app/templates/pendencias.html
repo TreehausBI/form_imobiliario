@@ -1,0 +1,33 @@
+{% extends "main.html" %}
+{% block title %}Imóveis para Atualizar{% endblock %}
+
+{% block content %}
+<div class="mt-10 bg-yellow-50 border border-yellow-200 rounded p-4">
+    <h3 class="text-lg font-semibold mb-3">
+      Empreendimentos sem atualização no mês
+      <span class="text-sm font-normal text-gray-600">
+        ({{ mes.strftime("%m/%Y") }})
+      </span>
+    </h3>
+
+    {% if pendentes %}
+      <ul class="space-y-2 text-sm">
+        {% for p in pendentes %}
+          <li class="flex justify-between">
+            <span>
+              {{ p.nome_empreendimento }} - {{ p.nome_construtora }}
+            </span>
+            <span class="text-gray-600">
+              Última atualização:
+              {{ p.ultima_atualizacao.strftime("%d/%m/%Y") if p.ultima_atualizacao else "Nunca" }}
+            </span>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="text-sm text-green-700">
+        Todos os empreendimentos estão atualizados neste mês ✅
+      </p>
+    {% endif %}
+  </div>
+{% endblock %}

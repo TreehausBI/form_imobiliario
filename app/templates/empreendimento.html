@@ -1,0 +1,171 @@
+{% extends "main.html" %}
+{% block title %}Empreendimento{% endblock %}
+
+{% block content %}
+<div class="bg-white shadow rounded-lg p-6">
+  <h2 class="text-xl font-bold mb-4">
+    {{ "Editar Empreendimento" if modo == "editar" else "Cadastro de Empreendimento" }}
+  </h2><h2 class="text-xl font-bold mb-4">Cadastro de Empreendimento</h2>
+
+  <form method="POST">
+    {{ form.hidden_tag() }}
+
+    <!-- Básico -->
+    <div class="mb-4">
+      {{ form.nome_empreendimento.label(class_="block text-sm font-medium") }}
+      {{ form.nome_empreendimento(class_="mt-1 w-full rounded border-gray-300") }}
+    </div>
+
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        {{ form.construtora.label(class_="block text-sm font-medium") }}
+        {{ form.construtora(class_="mt-1 w-full rounded border-gray-300") }}
+      </div>
+
+      <div>
+        {{ form.nova_construtora.label(class_="block text-sm font-medium") }}
+        {{ form.nova_construtora(class_="mt-1 w-full rounded border-gray-300", placeholder="Digite se não existir") }}
+      </div>
+
+      <div>
+        {{ form.contato.label(class_="block text-sm font-medium") }}
+        {{ form.contato(class_="mt-1 w-full rounded border-gray-300", placeholder="Digite o contato") }}
+      </div>
+
+      <div>
+        {{ form.bairro.label(class_="block text-sm font-medium") }}
+        {{ form.bairro(class_="mt-1 w-full rounded border-gray-300") }}
+      </div>
+    </div>
+
+    <!-- Detalhes -->
+    <div class="grid grid-cols-2 gap-4 mt-4">
+      <div>
+        {{ form.endereco.label(class_="block text-sm font-medium") }}
+        {{ form.endereco(class_="mt-1 w-full rounded border-gray-300") }}
+      </div>
+
+      <div>
+        {{ form.lote.label(class_="block text-sm font-medium") }}
+        {{ form.lote(class_="mt-1 w-full rounded border-gray-300") }}
+      </div>
+
+      <div>
+        {{ form.quadra.label(class_="block text-sm font-medium") }}
+        {{ form.quadra(class_="mt-1 w-full rounded border-gray-300") }}
+      </div>
+
+      <div>
+        {{ form.id_cartografica.label(class_="block text-sm font-medium") }}
+        {{ form.id_cartografica(class_="mt-1 w-full rounded border-gray-300") }}
+      </div>
+
+      <div>
+        {{ form.distancia_mar.label(class_="block text-sm font-medium") }}
+        {{ form.distancia_mar(class_="mt-1 w-full rounded border-gray-300") }}
+      </div>
+
+      <div>
+        {{ form.distancia_ao_empreendimento.label(class_="block text-sm font-medium") }}
+        {{ form.distancia_ao_empreendimento(class_="mt-1 w-full rounded border-gray-300") }}
+      </div>
+
+      <div>
+        {{ form.inicio_vendas.label(class_="block text-sm font-medium") }}
+        {{ form.inicio_vendas(class_="mt-1 w-full rounded border-gray-300", type="date") }}
+      </div>
+
+      <div>
+        {{ form.data_entrega.label(class_="block text-sm font-medium") }}
+        {{ form.data_entrega(class_="mt-1 w-full rounded border-gray-300", type="date") }}
+      </div>
+
+      <div>
+        {{ form.qtd_elevadores.label(class_="block text-sm font-medium") }}
+        {{ form.qtd_elevadores(class_="mt-1 w-full rounded border-gray-300") }}
+      </div>
+    </div>
+
+    <!-- Equipamentos -->
+    <div class="mt-6 grid grid-cols-2 md:grid-cols-3 gap-3 bg-gray-50 p-3 rounded">
+      {% for field in [
+        form.piscina, form.coworking, form.lavanderia,
+        form.restaurante_bar, form.academia,
+        form.pet_playground, form.salao_festas,
+        form.sauna, form.minimarket
+      ] %}
+        <div class="flex flex-col text-sm">
+          <label class="mb-1 font-medium">{{ field.label.text }}</label>
+          {{ field(class="border rounded px-2 py-1", min=0) }}
+        </div>
+      {% endfor %}
+    </div>
+
+    <!-- Condições de Pagamento -->
+    <div class="mt-8 bg-gray-50 p-4 rounded-lg">
+      <h3 class="text-lg font-semibold mb-4">Condições de Pagamento</h3>
+
+      <!-- Opção 1 -->
+      <div class="mb-6 border border-gray-200 rounded p-4 bg-white">
+        <h4 class="font-medium mb-3 text-gray-700">Opção 1 (Obrigatória)</h4>
+
+        <div class="grid grid-cols-3 gap-4">
+          <div>
+            {{ form.habite_se_1.label(class_="block text-sm font-medium") }}
+            {{ form.habite_se_1(class_="mt-1 w-full rounded border-gray-300") }}
+          </div>
+          <div>
+            {{ form.sinal_1.label(class_="block text-sm font-medium") }}
+            {{ form.sinal_1(class_="mt-1 w-full rounded border-gray-300") }}
+          </div>
+
+          <div>
+            {{ form.mensais_1.label(class_="block text-sm font-medium") }}
+            {{ form.mensais_1(class_="mt-1 w-full rounded border-gray-300") }}
+          </div>
+
+          <div>
+            {{ form.intercaladas_1.label(class_="block text-sm font-medium") }}
+            {{ form.intercaladas_1(class_="mt-1 w-full rounded border-gray-300") }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Opção 2 -->
+      <div class="border border-dashed border-gray-300 rounded p-4 bg-white">
+        <h4 class="font-medium mb-3 text-gray-700">
+          Opção 2 <span class="text-sm text-gray-400">(Opcional)</span>
+        </h4>
+
+        <div class="grid grid-cols-3 gap-4">
+          <div>
+            {{ form.habite_se_2.label(class_="block text-sm font-medium") }}
+            {{ form.habite_se_2(class_="mt-1 w-full rounded border-gray-300") }}
+          </div>
+          <div>
+            {{ form.sinal_2.label(class_="block text-sm font-medium") }}
+            {{ form.sinal_2(class_="mt-1 w-full rounded border-gray-300") }}
+          </div>
+
+          <div>
+            {{ form.mensais_2.label(class_="block text-sm font-medium") }}
+            {{ form.mensais_2(class_="mt-1 w-full rounded border-gray-300") }}
+          </div>
+
+          <div>
+            {{ form.intercaladas_2.label(class_="block text-sm font-medium") }}
+            {{ form.intercaladas_2(class_="mt-1 w-full rounded border-gray-300") }}
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="mt-6 text-right">
+      <button type="submit"
+        class="px-6 py-3 rounded-md text-white bg-[#ff9a6d] hover:bg-[#ff6725] transition">
+        {{ "Atualizar" if modo == "editar" else "Salvar Empreendimento" }}
+      </button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+

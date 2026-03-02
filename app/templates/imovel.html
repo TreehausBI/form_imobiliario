@@ -1,0 +1,75 @@
+{% extends "main.html" %}
+{% block title %}Cadastro de Imóvel{% endblock %}
+
+{% block content %}
+<div class="bg-white shadow rounded-lg p-6 max-w-4xl mx-auto">
+  <h2 class="text-xl font-bold mb-6">
+    {{ "Editar Imóvel" if modo == "editar" else "Cadastro de Unidade/Imóvel" }}
+  </h2>
+
+  <form method="POST">
+    {{ form.hidden_tag() }}
+
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+
+      <div class="md:col-span-2">
+        {{ form.empreendimento.label(class_="block text-sm font-medium") }}
+        {{ form.empreendimento(class_="mt-1 w-full rounded border-gray-300") }}
+      </div>
+
+      <div>
+        {{ form.apartamento.label(class_="block text-sm font-medium") }}
+        {{ form.apartamento(class_="mt-1 w-full rounded border-gray-300") }}
+      </div>
+
+      <div>
+        {{ form.pavimento.label(class_="block text-sm font-medium") }}
+        {{ form.pavimento(class_="mt-1 w-full rounded border-gray-300") }}
+      </div>
+
+      <div>
+        {{ form.qtd_quartos.label(class_="block text-sm font-medium") }}
+        {{ form.qtd_quartos(class_="mt-1 w-full rounded border-gray-300") }}
+      </div>
+
+      <div>
+        {{ form.posicao.label(class_="block text-sm font-medium") }}
+        {{ form.posicao(class_="mt-1 w-full rounded border-gray-300") }}
+      </div>
+
+      <div>
+        {{ form.area_interna.label(class_="block text-sm font-medium") }}
+        {{ form.area_interna(class_="mt-1 w-full rounded border-gray-300") }}
+      </div>
+
+      <div>
+        {{ form.area_externa.label(class_="block text-sm font-medium") }}
+        {{ form.area_externa(class_="mt-1 w-full rounded border-gray-300") }}
+      </div>
+
+      <div>
+        {{ form.vagas.label(class_="block text-sm font-medium") }}
+        {{ form.vagas(class_="mt-1 w-full rounded border-gray-300") }}
+      </div>
+
+      <div>
+        {{ form.bwc.label(class_="block text-sm font-medium") }}
+        {{ form.bwc(class_="mt-1 w-full rounded border-gray-300") }}
+      </div>
+
+       <div>
+        {{ form.unidades_por_pavimento.label(class_="block text-sm font-medium") }}
+        {{ form.unidades_por_pavimento(class_="mt-1 w-full rounded border-gray-300") }}
+      </div>
+
+    </div>
+
+    <div class="mt-6 text-right">
+      <button type="submit"
+        class="px-6 py-3 rounded-md text-white bg-[#ff9a6d] hover:bg-[#ff6725] transition">
+        Salvar Imóvel
+      </button>
+    </div>
+  </form>
+</div>
+{% endblock %}

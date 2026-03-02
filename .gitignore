@@ -1,0 +1,32 @@
+# Ambiente virtual
+venv/
+env/
+.venv/
+
+# Variáveis de ambiente
+.env
+
+# Cache Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Arquivos de log
+*.log
+
+# Banco local
+*.sqlite3
+*.db
+
+# VSCode
+.vscode/
+
+# Mac
+.DS_Store
+
+# Pytest
+.pytest_cache/
+
+# Migrations (opcional - depende do seu fluxo)
+# migrations/versions/*.pyc
