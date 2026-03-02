@@ -14,6 +14,9 @@ def create_app(config_name="default"):
     # 🔹 2. inicializar extensões DEPOIS da config
     db.init_app(app)
 
+    from .extensions import migrate
+    migrate.init_app(app, db)
+
     from .routes.empreendimento import empreendimento_bp
     from .routes.imovel import imovel_bp
     from .routes.valores import valores_bp
