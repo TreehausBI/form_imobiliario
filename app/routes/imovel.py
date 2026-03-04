@@ -105,12 +105,12 @@ def marcar_imovel_vendido(id):
             id_imovel=id,
             mes_referencia=inicio_mes,
             valor_total=0,
-            status="Vendido"
+            status="Vendida"
         )
         db.session.add(novo)
     else:
         valor_mes.valor_total = 0
-        valor_mes.status = "Vendido"
+        valor_mes.status = "Vendida"
 
     db.session.commit()
 
