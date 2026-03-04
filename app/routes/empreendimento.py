@@ -2,6 +2,9 @@ from flask import Blueprint, render_template, redirect, url_for, flash, request
 from app.forms.empreendimento import EmpreendimentoForm
 from app.models import Empreendimento, Construtora, Bairro, Equipamento, CondicaoPagamento, Imovel, Valores
 from ..extensions import db
+from sqlalchemy import func, and_
+from sqlalchemy.orm import aliased
+from datetime import date
 
 empreendimento_bp = Blueprint("empreendimento", __name__)
 
@@ -98,23 +101,60 @@ def cadastro_empreendimento():
 
     return render_template("empreendimento.html", form=form)
 
-
 @empreendimento_bp.route("/empreendimentos")
 def lista_empreendimentos():
+
+    # Subquery para pegar último mês por imóvel
+    sub = (
+        db.session.query(
+            Valores.id_imovel,
+            func.max(Valores.mes_referencia).label("max_mes")
+        )
+        .group_by(Valores.id_imovel)
+        .subquery()
+    )
+
+    # Alias da tabela Valores
+    v_alias = aliased(Valores)
+
     empreendimentos = (
         db.session.query(
             Empreendimento,
-            db.func.count(Imovel.id_imovel).label("qtd_imoveis"),
-            db.func.max(Valores.mes_referencia).label("ultimo_mes")
+            func.count(Imovel.id_imovel).label("total_imoveis"),
+            func.sum(
+                func.case(
+                    (v_alias.status == "Disponível", 1),
+                    else_=0
+                )
+            ).label("disponiveis"),
+            func.sum(
+                func.case(
+                    (v_alias.status == "Lançamento", 1),
+                    else_=0
+                )
+            ).label("lancamento"),
+            func.sum(
+                func.case(
+                    (v_alias.status == "Vendido", 1),
+                    else_=0
+                )
+            ).label("vendidos"),
+            func.sum(
+                func.case(
+                    (v_alias.status == "Indisponível", 1),
+                    else_=0
+                )
+            ).label("indisponiveis"),
+            func.max(v_alias.mes_referencia).label("ultimo_mes")
         )
-        .select_from(Empreendimento)
+        .outerjoin(Imovel, Imovel.id_empreendimento == Empreendimento.id_empreendimento)
+        .outerjoin(sub, sub.c.id_imovel == Imovel.id_imovel)
         .outerjoin(
-            Imovel,
-            Imovel.id_empreendimento == Empreendimento.id_empreendimento
-        )
-        .outerjoin(
-            Valores,
-            Valores.id_imovel == Imovel.id_imovel
+            v_alias,
+            and_(
+                v_alias.id_imovel == sub.c.id_imovel,
+                v_alias.mes_referencia == sub.c.max_mes
+            )
         )
         .group_by(Empreendimento.id_empreendimento)
         .order_by(Empreendimento.nome_empreendimento)
@@ -126,52 +166,36 @@ def lista_empreendimentos():
         empreendimentos=empreendimentos
     )
 
-@empreendimento_bp.route("/empreendimentos/<int:id>/imoveis")
-def imoveis_por_empreendimento(id):
-    mes = request.args.get("mes")
-    if mes:
-        mes = date.fromisoformat(mes)
+@empreendimento_bp.route("/empreendimento/<int:id>/zerar")
+def zerar_empreendimento(id):
 
-    empreendimento = Empreendimento.query.get_or_404(id)
+    emp = Empreendimento.query.get_or_404(id)
+    inicio_mes = date.today().replace(day=1)
 
-    if mes:
-        dados = (
-            db.session.query(Imovel, Valores)
-            .outerjoin(
-                Valores,
-                (Imovel.id_imovel == Valores.id_imovel) &
-                (Valores.mes_referencia == mes)
+    for imovel in emp.imoveis:
+
+        existe = Valores.query.filter_by(
+            id_imovel=imovel.id_imovel,
+            mes_referencia=inicio_mes
+        ).first()
+
+        if not existe:
+            novo = Valores(
+                id_imovel=imovel.id_imovel,
+                mes_referencia=inicio_mes,
+                valor_total=0,
+                status="Indisponível"
             )
-            .filter(Imovel.id_empreendimento == id)
-            .all()
-        )
-    else:
-        sub = (
-            db.session.query(
-                Valores.id_imovel,
-                db.func.max(Valores.mes_referencia).label("max_mes")
-            )
-            .group_by(Valores.id_imovel)
-            .subquery()
-        )
+            db.session.add(novo)
+        else:
+            existe.valor_total = 0
+            existe.status = "Indisponível"
 
-        dados = (
-            db.session.query(Imovel, Valores)
-            .outerjoin(sub, Imovel.id_imovel == sub.c.id_imovel)
-            .outerjoin(
-                Valores,
-                (Valores.id_imovel == sub.c.id_imovel) &
-                (Valores.mes_referencia == sub.c.max_mes)
-            )
-            .filter(Imovel.id_empreendimento == id)
-            .all()
-        )
+    db.session.commit()
 
-    return render_template(
-        "empreendimento_view_imovel.html",
-        empreendimento=empreendimento,
-        dados=dados
-    )
+    flash("Todos imóveis atualizados como indisponíveis no mês atual.", "success")
+
+    return redirect(url_for("empreendimento.lista_empreendimentos"))
 
 @empreendimento_bp.route("/empreendimentos/<int:id>/editar", methods=["GET", "POST"])
 def editar_empreendimento(id):
