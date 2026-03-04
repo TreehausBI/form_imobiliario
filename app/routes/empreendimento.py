@@ -136,10 +136,10 @@ def lista_empreendimentos():
             ).label("lancamento"),
             func.sum(
                 case(
-                    (v_alias.status == "Vendido", 1),
+                    (v_alias.status == "Distrato", 1),
                     else_=0
                 )
-            ).label("vendidos"),
+            ).label("distrato"),
             func.sum(
                 case(
                     (v_alias.status == "Indisponível", 1),

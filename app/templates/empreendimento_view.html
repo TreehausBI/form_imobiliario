@@ -14,7 +14,7 @@
     </tr>
   </thead>
   <tbody>
-    {% for emp, total, disp, lanc, vend, indis, ultimo in empreendimentos %}
+    {% for emp, total, disp, lanc, distr, indis, ultimo in empreendimentos %}
     <tr class="border-t border-gray-200">
       <td class="px-2 py-1 text-left">{{ emp.nome_empreendimento }}</td>
       <td class="px-2 py-1 text-left">{{ emp.construtora.nome_construtora }}</td>
@@ -22,7 +22,7 @@
       <td class="px-2 py-1 text-center">
         {{ disp or 0 }} Disp /
         {{ lanc or 0 }} Lanc /
-        {{ vend or 0 }} Vend /
+        {{ distr or 0 }} Distr /
         {{ indis or 0 }} Indisp
         <br>
         <span class="text-gray-500 text-xs">

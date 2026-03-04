@@ -73,7 +73,7 @@ def pendencias_mes():
     inicio_mes = date.today().replace(day=1)
     pendentes = []
 
-    # 🔥 Carrega tudo em uma tacada só
+    # Carrega tudo em uma tacada só
     empreendimentos = (
         Empreendimento.query
         .options(

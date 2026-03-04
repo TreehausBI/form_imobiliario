@@ -1,7 +1,8 @@
 from flask import Blueprint, render_template, render_template, redirect, url_for, flash
 from app.forms.imovel import ImovelForm
-from app.models import Imovel, Empreendimento, Posicao
+from app.models import Imovel, Empreendimento, Posicao, Valores
 from ..extensions import db
+from datetime import date
 
 imovel_bp = Blueprint("imovel", __name__)
 
@@ -85,4 +86,39 @@ def editar_imovel(id):
         "imovel.html",
         form=form,
         modo="editar"
+    )
+
+@imovel_bp.route("/imovel/<int:id>/vendido")
+def marcar_imovel_vendido(id):
+
+    imovel = Imovel.query.get_or_404(id)
+    inicio_mes = date.today().replace(day=1)
+
+    # verifica se já existe valor no mês atual
+    valor_mes = Valores.query.filter_by(
+        id_imovel=id,
+        mes_referencia=inicio_mes
+    ).first()
+
+    if not valor_mes:
+        novo = Valores(
+            id_imovel=id,
+            mes_referencia=inicio_mes,
+            valor_total=0,
+            status="Vendido"
+        )
+        db.session.add(novo)
+    else:
+        valor_mes.valor_total = 0
+        valor_mes.status = "Vendido"
+
+    db.session.commit()
+
+    flash("Imóvel marcado como vendido no mês atual.", "success")
+
+    return redirect(
+        url_for(
+            "empreendimento.imoveis_por_empreendimento",
+            id=imovel.id_empreendimento
+        )
     )
