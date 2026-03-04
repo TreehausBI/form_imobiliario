@@ -1,5 +1,6 @@
 from datetime import date
 from sqlalchemy import func, and_
+from sqlalchemy.orm import joinedload
 from flask import Blueprint, render_template, redirect, url_for, flash
 from app.forms.valores import ValoresImovelForm
 from app.models import Imovel, Valores, Empreendimento, Construtora
