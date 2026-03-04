@@ -1,5 +1,5 @@
 from datetime import date
-from sqlalchemy import func
+from sqlalchemy import func, and_
 from flask import Blueprint, render_template, redirect, url_for, flash
 from app.forms.valores import ValoresImovelForm
 from app.models import Imovel, Valores, Empreendimento, Construtora
@@ -70,59 +70,42 @@ def atualizar_valor(id_imovel):
 def pendencias_mes():
 
     inicio_mes = date.today().replace(day=1)
+    pendentes = []
 
-    # Subquery para pegar último status de cada imóvel
-    subquery_ultimo_status = (
-        db.session.query(
-            Valores.id_imovel,
-            func.max(Valores.mes_referencia).label("max_mes")
-        )
-        .group_by(Valores.id_imovel)
-        .subquery()
-    )
+    empreendimentos = Empreendimento.query.all()
 
-    # Junta para pegar status atual
-    status_atual = (
-        db.session.query(Valores)
-        .join(
-            subquery_ultimo_status,
-            and_(
-                Valores.id_imovel == subquery_ultimo_status.c.id_imovel,
-                Valores.mes_referencia == subquery_ultimo_status.c.max_mes
+    for emp in empreendimentos:
+
+        precisa_atualizar = False
+
+        for imovel in emp.imoveis:
+
+            ultimo_valor = (
+                Valores.query
+                .filter_by(id_imovel=imovel.id_imovel)
+                .order_by(Valores.mes_referencia.desc())
+                .first()
             )
-        )
-        .subquery()
-    )
 
-    pendentes = (
-        db.session.query(
-            Empreendimento.id_empreendimento,
-            Empreendimento.nome_empreendimento,
-            Construtora.nome_construtora,
-            func.max(Valores.mes_referencia).label("ultima_atualizacao")
-        )
-        .join(Construtora)
-        .join(Imovel)
-        .outerjoin(Valores)
-        .join(
-            status_atual,
-            status_atual.c.id_imovel == Imovel.id_imovel
-        )
-        .filter(
-            status_atual.c.status.in_(["Lançamento", "Disponível", "Distrato"])
-        )
-        .group_by(
-            Empreendimento.id_empreendimento,
-            Empreendimento.nome_empreendimento,
-            Construtora.nome_construtora
-        )
-        .having(
-            func.coalesce(func.max(Valores.mes_referencia), date(1900, 1, 1))
-            < inicio_mes
-        )
-        .order_by(Empreendimento.nome_empreendimento)
-        .all()
-    )
+            # Se nunca teve valor → precisa atualizar
+            if not ultimo_valor:
+                precisa_atualizar = True
+                break
+
+            # Se está lançamento ou disponível
+            if ultimo_valor.status in ["Lançamento", "Disponível"]:
+
+                # Se não atualizou esse mês
+                if ultimo_valor.mes_referencia < inicio_mes:
+                    precisa_atualizar = True
+                    break
+
+        if precisa_atualizar:
+            pendentes.append({
+                "nome_empreendimento": emp.nome_empreendimento,
+                "nome_construtora": emp.construtora.nome_construtora,
+                "ultima_atualizacao": ultimo_valor.mes_referencia if ultimo_valor else None
+            })
 
     return render_template(
         "pendencias.html",
