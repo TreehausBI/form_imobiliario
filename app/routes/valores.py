@@ -72,30 +72,37 @@ def pendencias_mes():
     inicio_mes = date.today().replace(day=1)
     pendentes = []
 
-    empreendimentos = Empreendimento.query.all()
+    # 🔥 Carrega tudo em uma tacada só
+    empreendimentos = (
+        Empreendimento.query
+        .options(
+            joinedload(Empreendimento.imoveis)
+            .joinedload(Imovel.valores)
+        )
+        .all()
+    )
 
     for emp in empreendimentos:
 
         precisa_atualizar = False
+        ultima_data_emp = None
 
         for imovel in emp.imoveis:
 
-            ultimo_valor = (
-                Valores.query
-                .filter_by(id_imovel=imovel.id_imovel)
-                .order_by(Valores.mes_referencia.desc())
-                .first()
-            )
-
-            # Se nunca teve valor → precisa atualizar
-            if not ultimo_valor:
+            if not imovel.valores:
                 precisa_atualizar = True
                 break
 
-            # Se está lançamento ou disponível
-            if ultimo_valor.status in ["Lançamento", "Disponível"]:
+            # pega último valor em memória
+            ultimo_valor = max(
+                imovel.valores,
+                key=lambda v: v.mes_referencia
+            )
 
-                # Se não atualizou esse mês
+            if not ultima_data_emp or ultimo_valor.mes_referencia > ultima_data_emp:
+                ultima_data_emp = ultimo_valor.mes_referencia
+
+            if ultimo_valor.status in ["Lançamento", "Disponível"]:
                 if ultimo_valor.mes_referencia < inicio_mes:
                     precisa_atualizar = True
                     break
@@ -104,7 +111,7 @@ def pendencias_mes():
             pendentes.append({
                 "nome_empreendimento": emp.nome_empreendimento,
                 "nome_construtora": emp.construtora.nome_construtora,
-                "ultima_atualizacao": ultimo_valor.mes_referencia if ultimo_valor else None
+                "ultima_atualizacao": ultima_data_emp
             })
 
     return render_template(
