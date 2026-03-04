@@ -122,3 +122,52 @@ def marcar_imovel_vendido(id):
             id=imovel.id_empreendimento
         )
     )
+
+@imovel_bp.route("/imovel/<int:id>/replicar")
+def replicar_mes_imovel(id):
+
+    imovel = Imovel.query.get_or_404(id)
+    inicio_mes = date.today().replace(day=1)
+
+    # Último valor registrado
+    ultimo = (
+        Valores.query
+        .filter_by(id_imovel=id)
+        .order_by(Valores.mes_referencia.desc())
+        .first()
+    )
+
+    if not ultimo:
+        flash("Imóvel ainda não possui valor anterior para replicar.", "warning")
+        return redirect(
+            url_for(
+                "empreendimento.imoveis_por_empreendimento",
+                id=imovel.id_empreendimento
+            )
+        )
+
+    # Verifica se já existe registro esse mês
+    existe = Valores.query.filter_by(
+        id_imovel=id,
+        mes_referencia=inicio_mes
+    ).first()
+
+    if existe:
+        flash("Imóvel já está atualizado neste mês.", "info")
+    else:
+        novo = Valores(
+            id_imovel=id,
+            mes_referencia=inicio_mes,
+            valor_total=ultimo.valor_total,
+            status=ultimo.status
+        )
+        db.session.add(novo)
+        db.session.commit()
+        flash("Mês replicado com sucesso.", "success")
+
+    return redirect(
+        url_for(
+            "empreendimento.imoveis_por_empreendimento",
+            id=imovel.id_empreendimento
+        )
+    )
