@@ -1,9 +1,9 @@
 from flask_wtf import FlaskForm
 from wtforms import (
     StringField, SelectField, IntegerField,
-    BooleanField, DateField, SubmitField, FloatField
+    BooleanField, DateField, SubmitField, DecimalField
 )
-from wtforms.validators import DataRequired, Optional, Length
+from wtforms.validators import DataRequired, Optional, Length, InputRequired
 
 class ValoresImovelForm(FlaskForm):
 
@@ -13,7 +13,12 @@ class ValoresImovelForm(FlaskForm):
         validators=[DataRequired()]
     )
 
-    valor_total = FloatField("Valor Total (R$)", validators=[DataRequired()])
+    valor_total = DecimalField(
+        "Valor Total (R$)",
+        places=2,
+        validators=[InputRequired()]
+    )
+
     status = SelectField(
         "Status",
         validators=[DataRequired()]

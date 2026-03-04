@@ -107,27 +107,25 @@ def editar_valor(id):
     valor = Valores.query.get_or_404(id)
     form = ValoresImovelForm(obj=valor)
 
-    form.status.choices = [(s, s) for s in sorted(status_db)]
     status_db = {s for (s,) in db.session.query(Valores.status).distinct() if s}
+    if not status_db:
+        status_db = {"Disponível"}
+
+    form.status.choices = [(s, s) for s in sorted(status_db)]
 
     if form.validate_on_submit():
-        print("VALIDOU")
-    else:
-        print("NAO VALIDOU:", form.errors)
-    #if form.validate_on_submit():
 
-    #    valor.mes_referencia = form.mes_referencia.data.replace(day=1)
-    #    valor.valor_total = form.valor_total.data
-    #    valor.status = form.status.data
+        valor.mes_referencia = form.mes_referencia.data.replace(day=1)
+        valor.valor_total = form.valor_total.data
+        valor.status = form.status.data
 
-    #   db.session.commit()
+        db.session.commit()
 
-    #   flash("Valor atualizado com sucesso", "success")
+        flash("Valor atualizado com sucesso", "success")
 
-    #   return redirect(
-    #        url_for("valores.atualizar_valor", id_imovel=valor.id_imovel)
-    #    )
-
+        return redirect(
+            url_for("valores.atualizar_valor", id_imovel=valor.id_imovel)
+        )
     imovel = valor.imovel
 
     historico = (
