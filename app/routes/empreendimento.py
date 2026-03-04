@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, redirect, url_for, flash, request
 from app.forms.empreendimento import EmpreendimentoForm
 from app.models import Empreendimento, Construtora, Bairro, Equipamento, CondicaoPagamento, Imovel, Valores
 from ..extensions import db
-from sqlalchemy import func, and_
+from sqlalchemy import func, and_, case
 from sqlalchemy.orm import aliased
 from datetime import date
 
@@ -122,25 +122,25 @@ def lista_empreendimentos():
             Empreendimento,
             func.count(Imovel.id_imovel).label("total_imoveis"),
             func.sum(
-                func.case(
+                case(
                     (v_alias.status == "Disponível", 1),
                     else_=0
                 )
             ).label("disponiveis"),
             func.sum(
-                func.case(
+                case(
                     (v_alias.status == "Lançamento", 1),
                     else_=0
                 )
             ).label("lancamento"),
             func.sum(
-                func.case(
+                case(
                     (v_alias.status == "Vendido", 1),
                     else_=0
                 )
             ).label("vendidos"),
             func.sum(
-                func.case(
+                case(
                     (v_alias.status == "Indisponível", 1),
                     else_=0
                 )
