@@ -71,17 +71,46 @@ def pendencias_mes():
 
     inicio_mes = date.today().replace(day=1)
 
+    # Subquery para pegar último status de cada imóvel
+    subquery_ultimo_status = (
+        db.session.query(
+            Valores.id_imovel,
+            func.max(Valores.mes_referencia).label("max_mes")
+        )
+        .group_by(Valores.id_imovel)
+        .subquery()
+    )
+
+    # Junta para pegar status atual
+    status_atual = (
+        db.session.query(Valores)
+        .join(
+            subquery_ultimo_status,
+            and_(
+                Valores.id_imovel == subquery_ultimo_status.c.id_imovel,
+                Valores.mes_referencia == subquery_ultimo_status.c.max_mes
+            )
+        )
+        .subquery()
+    )
+
     pendentes = (
         db.session.query(
             Empreendimento.id_empreendimento,
             Empreendimento.nome_empreendimento,
             Construtora.nome_construtora,
-            func.count(Imovel.id_imovel).label("qtd_imoveis"),
             func.max(Valores.mes_referencia).label("ultima_atualizacao")
         )
         .join(Construtora)
         .join(Imovel)
         .outerjoin(Valores)
+        .join(
+            status_atual,
+            status_atual.c.id_imovel == Imovel.id_imovel
+        )
+        .filter(
+            status_atual.c.status.in_(["Lançamento", "Disponível", "Distrato"])
+        )
         .group_by(
             Empreendimento.id_empreendimento,
             Empreendimento.nome_empreendimento,
@@ -96,7 +125,7 @@ def pendencias_mes():
     )
 
     return render_template(
-        "pendencias.html",   # <-- nome do seu novo html
+        "pendencias.html",
         pendentes=pendentes,
         mes=inicio_mes
     )
