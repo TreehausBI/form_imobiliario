@@ -101,6 +101,7 @@ def cadastro_empreendimento():
 
     return render_template("empreendimento.html", form=form)
 
+
 @empreendimento_bp.route("/empreendimentos")
 def lista_empreendimentos():
 
@@ -164,6 +165,53 @@ def lista_empreendimentos():
     return render_template(
         "empreendimento_view.html",
         empreendimentos=empreendimentos
+    )
+
+@empreendimento_bp.route("/empreendimentos/<int:id>/imoveis")
+def imoveis_por_empreendimento(id):
+    mes = request.args.get("mes")
+    if mes:
+        mes = date.fromisoformat(mes)
+
+    empreendimento = Empreendimento.query.get_or_404(id)
+
+    if mes:
+        dados = (
+            db.session.query(Imovel, Valores)
+            .outerjoin(
+                Valores,
+                (Imovel.id_imovel == Valores.id_imovel) &
+                (Valores.mes_referencia == mes)
+            )
+            .filter(Imovel.id_empreendimento == id)
+            .all()
+        )
+    else:
+        sub = (
+            db.session.query(
+                Valores.id_imovel,
+                db.func.max(Valores.mes_referencia).label("max_mes")
+            )
+            .group_by(Valores.id_imovel)
+            .subquery()
+        )
+
+        dados = (
+            db.session.query(Imovel, Valores)
+            .outerjoin(sub, Imovel.id_imovel == sub.c.id_imovel)
+            .outerjoin(
+                Valores,
+                (Valores.id_imovel == sub.c.id_imovel) &
+                (Valores.mes_referencia == sub.c.max_mes)
+            )
+            .filter(Imovel.id_empreendimento == id)
+            .all()
+        )
+
+    return render_template(
+        "empreendimento_view_imovel.html",
+        empreendimento=empreendimento,
+        dados=dados
     )
 
 @empreendimento_bp.route("/empreendimento/<int:id>/zerar")
