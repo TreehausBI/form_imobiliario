@@ -28,6 +28,7 @@ Flask-Migrate==4.0.0
 requests==2.31.0
 Jinja2==3.1.2
 openpyxl
+pandas
 
 # Servidor WSGI
 gunicorn==21.2.0
