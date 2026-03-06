@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+
+<h1 class="text-xl font-bold mb-4">Exportar base</h1>
+
+<form action="{{ url_for('export.exportar_excel') }}" method="get" class="flex gap-2">
+
+<select name="mes" class="border p-1">
+
+{% set meses = [
+(1,'Jan'),(2,'Fev'),(3,'Mar'),(4,'Abr'),
+(5,'Mai'),(6,'Jun'),(7,'Jul'),(8,'Ago'),
+(9,'Set'),(10,'Out'),(11,'Nov'),(12,'Dez')
+] %}
+
+{% for m,nome in meses %}
+<option value="{{m}}">{{nome}}</option>
+{% endfor %}
+
+</select>
+
+
+<select name="ano" class="border p-1">
+
+{% for ano in range(2024, 2100) %}
+<option value="{{ano}}">{{ano}}</option>
+{% endfor %}
+
+</select>
+
+<button class="px-6 py-3 rounded-md text-white bg-[#ff9a6d] hover:bg-[#ff6725] transition">
+Exportar Excel
+</button>
+
+</form>
+
+{% endblock %}
