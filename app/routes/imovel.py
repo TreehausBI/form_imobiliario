@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, render_template, redirect, url_for, flash
+from flask import Blueprint, render_template, render_template, redirect, url_for, flash, request
 from app.forms.imovel import ImovelForm
 from app.models import Imovel, Empreendimento, Posicao, Valores
 from ..extensions import db
@@ -88,86 +88,63 @@ def editar_imovel(id):
         modo="editar"
     )
 
-@imovel_bp.route("/imovel/<int:id>/vendido")
-def marcar_imovel_vendido(id):
+@imovel_bp.route("/imoveis/acao_lote", methods=["POST"])
+def acao_em_lote():
 
-    imovel = Imovel.query.get_or_404(id)
+    vendidos = request.form.getlist("vendidos")
+    replicar = request.form.getlist("replicar")
+
     inicio_mes = date.today().replace(day=1)
 
-    # verifica se já existe valor no mês atual
-    valor_mes = Valores.query.filter_by(
-        id_imovel=id,
-        mes_referencia=inicio_mes
-    ).first()
-
-    if not valor_mes:
-        novo = Valores(
+    # MARCAR VENDIDOS
+    for id in vendidos:
+        id = int(id)
+        existe = Valores.query.filter_by(
             id_imovel=id,
-            mes_referencia=inicio_mes,
-            valor_total=0,
-            status="Vendida"
+            mes_referencia=inicio_mes
+        ).first()
+
+        if existe:
+            existe.valor_total = 0
+            existe.status = "Vendida"
+        else:
+            novo = Valores(
+                id_imovel=id,
+                mes_referencia=inicio_mes,
+                valor_total=0,
+                status="Vendida"
+            )
+            db.session.add(novo)
+
+    # REPLICAR MES
+    for id in replicar:
+        id = int(id)
+        existe = Valores.query.filter_by(
+            id_imovel=id,
+            mes_referencia=inicio_mes
+        ).first()
+
+        if existe:
+            continue
+
+        ultimo = (
+            Valores.query
+            .filter_by(id_imovel=id)
+            .order_by(Valores.mes_referencia.desc())
+            .first()
         )
-        db.session.add(novo)
-    else:
-        valor_mes.valor_total = 0
-        valor_mes.status = "Vendida"
+
+        if ultimo:
+            novo = Valores(
+                id_imovel=id,
+                mes_referencia=inicio_mes,
+                valor_total=ultimo.valor_total,
+                status=ultimo.status
+            )
+            db.session.add(novo)
 
     db.session.commit()
 
-    flash("Imóvel marcado como vendido no mês atual.", "success")
+    flash("Atualização realizada com sucesso.", "success")
 
-    return redirect(
-        url_for(
-            "empreendimento.imoveis_por_empreendimento",
-            id=imovel.id_empreendimento
-        )
-    )
-
-@imovel_bp.route("/imovel/<int:id>/replicar")
-def replicar_mes_imovel(id):
-
-    imovel = Imovel.query.get_or_404(id)
-    inicio_mes = date.today().replace(day=1)
-
-    # Último valor registrado
-    ultimo = (
-        Valores.query
-        .filter_by(id_imovel=id)
-        .order_by(Valores.mes_referencia.desc())
-        .first()
-    )
-
-    if not ultimo:
-        flash("Imóvel ainda não possui valor anterior para replicar.", "warning")
-        return redirect(
-            url_for(
-                "empreendimento.imoveis_por_empreendimento",
-                id=imovel.id_empreendimento
-            )
-        )
-
-    # Verifica se já existe registro esse mês
-    existe = Valores.query.filter_by(
-        id_imovel=id,
-        mes_referencia=inicio_mes
-    ).first()
-
-    if existe:
-        flash("Imóvel já está atualizado neste mês.", "info")
-    else:
-        novo = Valores(
-            id_imovel=id,
-            mes_referencia=inicio_mes,
-            valor_total=ultimo.valor_total,
-            status=ultimo.status
-        )
-        db.session.add(novo)
-        db.session.commit()
-        flash("Mês replicado com sucesso.", "success")
-
-    return redirect(
-        url_for(
-            "empreendimento.imoveis_por_empreendimento",
-            id=imovel.id_empreendimento
-        )
-    )
+    return redirect(request.referrer)
