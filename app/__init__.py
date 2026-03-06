@@ -21,10 +21,12 @@ def create_app(config_name="default"):
     from .routes.imovel import imovel_bp
     from .routes.valores import valores_bp
     from .routes.main import main
+    from .routes.exportacao import export_bp
 
     app.register_blueprint(empreendimento_bp)
     app.register_blueprint(imovel_bp)
     app.register_blueprint(valores_bp)
     app.register_blueprint(main)
+    app.register_blueprint(export_bp)
 
     return app
