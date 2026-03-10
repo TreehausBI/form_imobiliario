@@ -8,65 +8,6 @@ from ..extensions import db
 
 valores_bp = Blueprint("valores", __name__)
 
-@valores_bp.route("/valores/<int:id_imovel>", methods=["GET", "POST"])
-def atualizar_valor(id_imovel):
-
-    imovel = Imovel.query.get_or_404(id_imovel)
-    form = ValoresImovelForm()
-
-    # status dinâmico
-    status_db = {s for (s,) in db.session.query(Valores.status).distinct() if s}
-    if not status_db:
-        status_db = {"Disponível"}
-
-    form.status.choices = [(s, s) for s in sorted(status_db)]
-
-    if form.validate_on_submit():
-
-        mes = form.mes_referencia.data.replace(day=1)
-
-        valor_existente = Valores.query.filter_by(
-            id_imovel=id_imovel,
-            mes_referencia=mes
-        ).first()
-
-        if valor_existente:
-            valor_existente.valor_total = form.valor_total.data
-            valor_existente.status = form.status.data
-        else:
-            novo = Valores(
-                id_imovel=id_imovel,
-                mes_referencia=mes,
-                valor_total=form.valor_total.data,
-                status=form.status.data
-            )
-            db.session.add(novo)
-
-        print("Mes no banco:", valor_existente)
-        print("Mes enviado:", mes)
-
-        db.session.commit()
-
-        flash("Valor atualizado com sucesso", "success")
-
-        # Redireciona para a própria página de valores
-        return redirect(url_for("valores.atualizar_valor", id_imovel=id_imovel))
-
-    # AQUI ESTÁ O QUE FALTAVA
-    historico = (
-        Valores.query
-        .filter_by(id_imovel=id_imovel)
-        .order_by(Valores.mes_referencia.desc())
-        .all()
-    )
-
-    return render_template(
-        "valores.html",
-        form=form,
-        imovel=imovel,
-        historico=historico
-    )
-
 @valores_bp.route("/valores/pendencias")
 def pendencias_mes():
 

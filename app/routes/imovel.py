@@ -91,57 +91,136 @@ def editar_imovel(id):
 @imovel_bp.route("/imoveis/acao_lote", methods=["POST"])
 def acao_em_lote():
 
+    acao = request.form.get("acao")
+
     vendidos = request.form.getlist("vendidos")
     replicar = request.form.getlist("replicar")
-
+    emp_id = int(request.form.get("empreendimento_id"))
     inicio_mes = date.today().replace(day=1)
 
-    # MARCAR VENDIDOS
-    for id in vendidos:
-        id = int(id)
-        existe = Valores.query.filter_by(
-            id_imovel=id,
-            mes_referencia=inicio_mes
-        ).first()
+    # AUMENTO EM TODOS
+    if acao == "aumento":
 
-        if existe:
-            existe.valor_total = 0
-            existe.status = "Vendida"
-        else:
-            novo = Valores(
+        aumento = request.form.get("aumento_percentual")
+
+        if aumento:
+            aumento = float(aumento) / 100
+
+            imoveis = Imovel.query.filter_by(
+                id_empreendimento=emp_id
+            ).all()
+
+            for imovel in imoveis:
+
+                ultimo = (
+                    Valores.query
+                    .filter_by(id_imovel=imovel.id_imovel)
+                    .order_by(Valores.mes_referencia.desc())
+                    .first()
+                )
+
+                if not ultimo:
+                    continue
+
+                novo_valor = ultimo.valor_total * (1 + aumento)
+
+                existe = Valores.query.filter_by(
+                    id_imovel=imovel.id_imovel,
+                    mes_referencia=inicio_mes
+                ).first()
+
+                if existe:
+                    existe.valor_total = novo_valor
+                else:
+                    novo = Valores(
+                        id_imovel=imovel.id_imovel,
+                        mes_referencia=inicio_mes,
+                        valor_total=novo_valor,
+                        status=ultimo.status
+                    )
+                    db.session.add(novo)
+
+    # SALVAR ALTERAÇÕES
+    if acao == "salvar":
+
+        # MARCAR VENDIDOS
+        for id in vendidos:
+            id = int(id)
+
+            existe = Valores.query.filter_by(
                 id_imovel=id,
-                mes_referencia=inicio_mes,
-                valor_total=0,
-                status="Vendida"
-            )
-            db.session.add(novo)
+                mes_referencia=inicio_mes
+            ).first()
 
-    # REPLICAR MES
-    for id in replicar:
-        id = int(id)
-        existe = Valores.query.filter_by(
-            id_imovel=id,
-            mes_referencia=inicio_mes
-        ).first()
+            if existe:
+                existe.valor_total = 0
+                existe.status = "Vendida"
+            else:
+                novo = Valores(
+                    id_imovel=id,
+                    mes_referencia=inicio_mes,
+                    valor_total=0,
+                    status="Vendida"
+                )
+                db.session.add(novo)
 
-        if existe:
-            continue
+        # REPLICAR MES
+        for id in replicar:
+            id = int(id)
 
-        ultimo = (
-            Valores.query
-            .filter_by(id_imovel=id)
-            .order_by(Valores.mes_referencia.desc())
-            .first()
-        )
-
-        if ultimo:
-            novo = Valores(
+            existe = Valores.query.filter_by(
                 id_imovel=id,
-                mes_referencia=inicio_mes,
-                valor_total=ultimo.valor_total,
-                status=ultimo.status
+                mes_referencia=inicio_mes
+            ).first()
+
+            if existe:
+                continue
+
+            ultimo = (
+                Valores.query
+                .filter_by(id_imovel=id)
+                .order_by(Valores.mes_referencia.desc())
+                .first()
             )
-            db.session.add(novo)
+
+            if ultimo:
+                novo = Valores(
+                    id_imovel=id,
+                    mes_referencia=inicio_mes,
+                    valor_total=ultimo.valor_total,
+                    status=ultimo.status
+                )
+                db.session.add(novo)
+
+        # NOVOS VALORES/STATUS
+        for key in request.form:
+            if key.startswith("novo_valor_"):
+
+                id_imovel = int(key.replace("novo_valor_", ""))
+
+                valor = request.form.get(key)
+                status = request.form.get(f"novo_status_{id_imovel}")
+
+                if valor or status:
+
+                    existe = Valores.query.filter_by(
+                        id_imovel=id_imovel,
+                        mes_referencia=inicio_mes
+                    ).first()
+
+                    if existe:
+                        if valor:
+                            existe.valor_total = valor
+                        if status:
+                            existe.status = status
+                    else:
+                        novo = Valores(
+                            id_imovel=id_imovel,
+                            mes_referencia=inicio_mes,
+                            valor_total=valor if valor else None,
+                            status=status if status else None
+                        )
+                        db.session.add(novo)
 
     db.session.commit()
 
