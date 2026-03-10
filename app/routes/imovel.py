@@ -3,6 +3,7 @@ from app.forms.imovel import ImovelForm
 from app.models import Imovel, Empreendimento, Posicao, Valores
 from ..extensions import db
 from datetime import date
+from decimal import Decimal
 
 imovel_bp = Blueprint("imovel", __name__)
 
@@ -104,7 +105,7 @@ def acao_em_lote():
         aumento = request.form.get("aumento_percentual")
 
         if aumento:
-            aumento = float(aumento) / 100
+            aumento = Decimal(aumento) / Decimal(100)
 
             imoveis = Imovel.query.filter_by(
                 id_empreendimento=emp_id
