@@ -27,6 +27,13 @@ Aplicar aumento em todos imóveis
 
 </div>
 
+<div class="flex items-center gap-2 mb-3">
+<label class="flex items-center gap-2">
+<input type="checkbox" id="replicar_todos">
+Replicar mês para todos os imóveis
+</label>
+</div>
+
 <table class="w-full text-sm border border-gray-200">
 
   <thead class="bg-gray-100">
@@ -129,4 +136,19 @@ Aplicar alterações
 </button>
 </div>
 </form>
+
+<script>
+
+document.getElementById("replicar_todos").addEventListener("change", function(){
+
+    const checkboxes = document.querySelectorAll('input[name="replicar"]');
+
+    checkboxes.forEach(cb => {
+        cb.checked = this.checked;
+    });
+
+});
+
+</script>
+
 {% endblock %}
