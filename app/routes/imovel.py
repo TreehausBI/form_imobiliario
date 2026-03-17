@@ -249,7 +249,6 @@ def acao_em_lote():
 def deletar_imovel(id):
 
     imovel = Imovel.query.get_or_404(id)
-
     emp_id = imovel.id_empreendimento
 
     db.session.delete(imovel)
@@ -257,9 +256,9 @@ def deletar_imovel(id):
 
     flash("Imóvel deletado com sucesso", "success")
 
-    return render_template(
-        "imovel.html",
-        form=form,
-        modo="editar",
-        imovel=imovel   # 👈 IMPORTANTE
+    return redirect(
+        url_for(
+            "empreendimento.imoveis_por_empreendimento",
+            id=emp_id
+        )
     )
