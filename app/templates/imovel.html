@@ -73,7 +73,7 @@
   </form>
 </div>
 
-{% if modo == "editar" and imovel %}
+{% if modo == "editar"}
 <form method="POST"
       action="{{ url_for('imovel.deletar_imovel', id=imovel.id_imovel) }}"
       onsubmit="return confirm('Tem certeza que deseja excluir este imóvel?');">
