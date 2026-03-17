@@ -102,7 +102,8 @@ def editar_imovel(id):
     return render_template(
         "imovel.html",
         form=form,
-        modo="editar"
+        modo="editar",
+        imovel=imovel
     )
 
 @imovel_bp.route("/imoveis/acao_lote", methods=["POST"])
