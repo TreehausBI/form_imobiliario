@@ -94,7 +94,11 @@ class Imovel(db.Model):
     bwc = db.Column(db.Integer)
     unidades_por_pavimento = db.Column(db.Integer)
 
-    valores = db.relationship('Valores', backref='imovel', lazy=True)
+    valores = db.relationship(
+    "Valores",
+    backref="imovel",
+    cascade="all, delete"
+)
 
 class Valores(db.Model):
     __tablename__ = 'valores'

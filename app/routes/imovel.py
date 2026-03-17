@@ -4,13 +4,16 @@ from app.models import Imovel, Empreendimento, Posicao, Valores
 from ..extensions import db
 from datetime import date
 from decimal import Decimal
+from flask import session
 
 imovel_bp = Blueprint("imovel", __name__)
 
 @imovel_bp.route("/imovel", methods=["GET", "POST"])
 def cadastro_imovel():
+
     form = ImovelForm()
 
+    # choices
     form.empreendimento.choices = [
         (e.id_empreendimento, e.nome_empreendimento)
         for e in Empreendimento.query.order_by(Empreendimento.nome_empreendimento)
@@ -21,7 +24,15 @@ def cadastro_imovel():
         for p in Posicao.query.order_by(Posicao.nome_posicao)
     ]
 
+    # manter último selecionado (ANTES do submit)
+    if not form.is_submitted():
+        ultimo_emp = session.get("ultimo_empreendimento")
+        if ultimo_emp:
+            form.empreendimento.data = ultimo_emp
+
+    # submit
     if form.validate_on_submit():
+
         imovel = Imovel(
             id_empreendimento=form.empreendimento.data,
             apartamento=form.apartamento.data,
@@ -34,10 +45,15 @@ def cadastro_imovel():
             bwc=form.bwc.data,
             unidades_por_pavimento=form.unidades_por_pavimento.data
         )
+
         db.session.add(imovel)
         db.session.commit()
 
+        # salva último usado
+        session["ultimo_empreendimento"] = form.empreendimento.data
+
         flash("Imóvel cadastrado com sucesso", "success")
+
         return redirect(url_for("imovel.cadastro_imovel"))
 
     return render_template("imovel.html", form=form)
@@ -228,3 +244,22 @@ def acao_em_lote():
     flash("Atualização realizada com sucesso.", "success")
 
     return redirect(request.referrer)
+
+@imovel_bp.route("/imoveis/<int:id>/deletar", methods=["POST"])
+def deletar_imovel(id):
+
+    imovel = Imovel.query.get_or_404(id)
+
+    emp_id = imovel.id_empreendimento
+
+    db.session.delete(imovel)
+    db.session.commit()
+
+    flash("Imóvel deletado com sucesso", "success")
+
+    return render_template(
+        "imovel.html",
+        form=form,
+        modo="editar",
+        imovel=imovel   # 👈 IMPORTANTE
+    )
