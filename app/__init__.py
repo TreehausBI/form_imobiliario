@@ -22,11 +22,13 @@ def create_app(config_name="default"):
     from .routes.valores import valores_bp
     from .routes.main import main
     from .routes.exportacao import export_bp
+    from .routes.api import api_bp
 
     app.register_blueprint(empreendimento_bp)
     app.register_blueprint(imovel_bp)
     app.register_blueprint(valores_bp)
     app.register_blueprint(main)
     app.register_blueprint(export_bp)
+    app.register_blueprint(api_bp)
 
     return app

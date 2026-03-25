@@ -1,0 +1,11 @@
+{
+	"folders": [
+		{
+			"name": "Nest",
+			"path": "../.."
+		}
+	],
+	"settings": {
+		"python-envs.pythonProjects": []
+	}
+}
