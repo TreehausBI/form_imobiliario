@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, Response
 import pandas as pd
 from app import db 
 
@@ -35,13 +35,12 @@ def get_empreendimentos():
 @api_bp.route("/base_analitica_csv")
 def get_base_csv():
 
-    query = "SELECT * FROM base_analitica"
-    df = pd.read_sql(query, db.engine)
+    def generate():
+        for chunk in pd.read_sql(
+            "SELECT * FROM base_analitica",
+            db.engine,
+            chunksize=5000
+        ):
+            yield chunk.to_csv(index=False, header=False)
 
-    csv = df.to_csv(index=False)
-
-    return Response(
-        csv,
-        mimetype="text/csv",
-        headers={"Content-Disposition": "attachment; filename=base.csv"}
-    )
+    return Response(generate(), mimetype="text/csv")
