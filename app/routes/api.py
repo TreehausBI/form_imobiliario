@@ -17,7 +17,7 @@ def get_base():
     return df.to_json(orient="records")
 
 
-@api_bp.route("/empreendimentos")
+@api_bp.route("/mapa")
 def get_empreendimentos():
 
     query = """
