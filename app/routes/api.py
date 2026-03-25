@@ -1,3 +1,7 @@
+from flask import Blueprint, jsonify
+import pandas as pd
+from app import db 
+
 api_bp = Blueprint("api", __name__)
 
 @api_bp.route("/base_analitica")
