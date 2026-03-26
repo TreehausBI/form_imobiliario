@@ -4,43 +4,64 @@ from app import db
 
 api_bp = Blueprint("api", __name__)
 
-@api_bp.route("/base_analitica")
+@api_bp.route("/fato_valores")
 def get_base():
 
     query = """
     SELECT *
-    FROM base_analitica
+    FROM fato_valores
     """
 
     df = pd.read_sql(query, db.engine)
 
     return df.to_json(orient="records")
 
+def generate():
+    first = True
 
-@api_bp.route("/mapa")
-def get_empreendimentos():
+    for chunk in pd.read_sql(
+        "SELECT * FROM fato_valores",
+        db.engine,
+        chunksize=5000
+    ):
+        yield chunk.to_csv(index=False, header=first)
+        first = False
+
+@api_bp.route("/dim_imovel_csv")
+def dim_imovel_csv():
 
     query = """
     SELECT
-        id_empreendimento,
-        nome_empreendimento,
-        endereco
-    FROM empreendimento
+        i.*,
+        p.nome_posicao
+    FROM imovel i
+    JOIN posicao p ON p.id_posicao = i.id_posicao
     """
 
     df = pd.read_sql(query, db.engine)
 
-    return df.to_json(orient="records")
+    return Response(df.to_csv(index=False), mimetype="text/csv")
 
-@api_bp.route("/base_analitica_csv")
-def get_base_csv():
+@api_bp.route("/dim_empreendimento_csv")
+def dim_empreendimento_csv():
 
-    def generate():
-        for chunk in pd.read_sql(
-            "SELECT * FROM base_analitica",
-            db.engine,
-            chunksize=5000
-        ):
-            yield chunk.to_csv(index=False, header=False)
+    query = """
+    SELECT
+        e.*,
+        b.nome_bairro,
+        c.nome_construtora
+    FROM empreendimento e
+    JOIN bairro b ON b.id_bairro = e.id_bairro
+    JOIN construtora c ON c.id_construtora = e.id_construtora
+    """
 
-    return Response(generate(), mimetype="text/csv")
+    df = pd.read_sql(query, db.engine)
+
+    return Response(df.to_csv(index=False), mimetype="text/csv")
+
+@api_bp.route("/dim_equipamento_csv")
+def dim_equipamento_csv():
+
+    df = pd.read_sql("SELECT * FROM equipamento", db.engine)
+
+    return Response(df.to_csv(index=False), mimetype="text/csv")
