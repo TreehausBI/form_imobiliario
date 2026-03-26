@@ -17,7 +17,7 @@ def fato_valores_csv():
             engine,  
             chunksize=5000
         ):
-            yield chunk.to_csv(index=False, header=first)
+            yield chunk.to_csv(index=False, header=first, decimal=".")
             first = False
 
     return Response(generate(), mimetype="text/csv")
