@@ -4,28 +4,21 @@ from app import db
 
 api_bp = Blueprint("api", __name__)
 
-@api_bp.route("/fato_valores")
-def get_base():
+@api_bp.route("/fato_valores_csv")
+def fato_valores_csv():
 
-    query = """
-    SELECT *
-    FROM fato_valores
-    """
+    def generate():
+        first = True
 
-    df = pd.read_sql(query, db.engine)
+        for chunk in pd.read_sql(
+            "SELECT * FROM fato_valores",
+            db.engine,
+            chunksize=5000
+        ):
+            yield chunk.to_csv(index=False, header=first)
+            first = False
 
-    return df.to_json(orient="records")
-
-def generate():
-    first = True
-
-    for chunk in pd.read_sql(
-        "SELECT * FROM fato_valores",
-        db.engine,
-        chunksize=5000
-    ):
-        yield chunk.to_csv(index=False, header=first)
-        first = False
+    return Response(generate(), mimetype="text/csv")
 
 @api_bp.route("/dim_imovel_csv")
 def dim_imovel_csv():
