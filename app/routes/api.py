@@ -7,12 +7,14 @@ api_bp = Blueprint("api", __name__)
 @api_bp.route("/fato_valores_csv")
 def fato_valores_csv():
 
+    engine = db.engine  
+
     def generate():
         first = True
 
         for chunk in pd.read_sql(
             "SELECT * FROM fato_valores",
-            db.engine,
+            engine,  
             chunksize=5000
         ):
             yield chunk.to_csv(index=False, header=first)
